@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Z-Score Protype V1 Cloud Infrastructure Repo
+
+
+Parameters:
+  ENV:
+    Description: Environment to run application
+    Default: local
+    Type: String
+    AllowedValues:
+      - local
+      - dev
+      - prod
+
+
+Resources: 
+
+  DBInterfaceApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Join ["-", [ "DBinterfaceApiFunction", !Ref "AWS::Region", !Ref ENV ]]
+      CodeUri: .
+      Handler: functions/api/src/app.lambda_handler
+      Timeout: 15
+      Runtime: python3.9
+      Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
+          POWERTOOLS_SERVICE_NAME: DBInterfaceApi
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{path+}
+            Auth:
+              ApiKeyRequired: true
+
