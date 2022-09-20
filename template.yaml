@@ -17,6 +17,24 @@ Parameters:
 
 Resources: 
 
+  MainDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Join ["-", [ "MainDB", !Ref "AWS::Region", !Ref ENV ]]
+      BillingMode: PAY_PER_REQUEST 
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: S
+        - AttributeName: "sk"
+          AttributeType: S
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: HASH
+        - AttributeName: "sk"
+          KeyType: RANGE
+
+          
+
   DBInterfaceApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -38,4 +56,19 @@ Resources:
             Path: /{path+}
             Auth:
               ApiKeyRequired: true
+      Policies:
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: "Allow"
+              Action: 
+                - dynamodb:GetItem
+                - dynamodb:GetBatchItem
+                - dynamodb:PutItem
+                - dyanmodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:BatchWriteItem
+              Resource:
+                - !GetAtt MainDB.Arn
+
+      
 
