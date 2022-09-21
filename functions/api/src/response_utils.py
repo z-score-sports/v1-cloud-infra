@@ -7,5 +7,7 @@ from aws_lambda_powertools.event_handler import content_types
 def build_response(status_code: int, body: dict):
 
     return Response(
-        status_code=status_code, content_type=content_types.APPLICATION_JSON, body=body
+        status_code=status_code,
+        content_type=content_types.APPLICATION_JSON,
+        body=json.dumps(body),
     )

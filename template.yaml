@@ -14,26 +14,36 @@ Parameters:
       - dev
       - prod
 
+Conditions: 
+  CreateSharedLayer: !Equals [!Ref ENV, local]
+
 
 Resources: 
 
-  MainDB:
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Condition: CreateSharedLayer
+    Properties:
+      ContentUri: shared/
+      CompatibleRuntimes:
+        - python3.9
+
+  GamesDB:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Join ["-", [ "MainDB", !Ref "AWS::Region", !Ref ENV ]]
+      TableName: !Join ["-", [ "GamesDB", !Ref "AWS::Region", !Ref ENV ]]
       BillingMode: PAY_PER_REQUEST 
       AttributeDefinitions:
-        - AttributeName: "pk"
+        - AttributeName: "gameId"
           AttributeType: S
-        - AttributeName: "sk"
+        - AttributeName: "snapshot"
           AttributeType: S
       KeySchema:
-        - AttributeName: "pk"
+        - AttributeName: "gameId"
           KeyType: HASH
-        - AttributeName: "sk"
+        - AttributeName: "snapshot"
           KeyType: RANGE
-
-          
+            
 
   DBInterfaceApiFunction:
     Type: AWS::Serverless::Function
@@ -44,6 +54,8 @@ Resources:
       Timeout: 15
       Runtime: python3.9
       Tracing: Active
+      Layers:
+        - !Ref SharedLayer
       Environment:
         Variables:
           LOG_LEVEL: INFO
@@ -68,7 +80,7 @@ Resources:
                 - dynamodb:DeleteItem
                 - dynamodb:BatchWriteItem
               Resource:
-                - !GetAtt MainDB.Arn
+                - !GetAtt GamesDB.Arn
 
       
 
