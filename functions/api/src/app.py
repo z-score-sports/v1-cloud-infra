@@ -1,5 +1,5 @@
-from distutils.command.build import build
 import os
+import random
 
 import boto3
 from aws_lambda_powertools import Logger, Tracer
@@ -20,6 +20,32 @@ logger = Logger(
 )
 
 
+@app.not_found
+@tracer.capture_method
+def not_found(ex: NotFoundError):
+    method = app.current_event.http_method
+    path = app.current_event.path
+    return build_response(404, {"message": f"Route {method} {path} not found"})
+
+
+@app.get("/health")
+def health():
+    return build_response(200, {"message": "Fuck you Mitch"})
+
+
+@app.post("/game")
+@tracer.capture_method
+def post_game():
+    logger.info("Attempting to add new game")
+    # TODO: Creates a random gameId, processes data, then writes to dynamo
+
+    game_id = format(random.getrandbits(64), "x")
+
+    return build_response(
+        200, {"message": f"Game {game_id} data registered successfully"}
+    )
+
+
 @lambda_handler_decorator
 def middleware(handler, event, context: LambdaContext):
 
@@ -31,23 +57,9 @@ def middleware(handler, event, context: LambdaContext):
     return handler_return
 
 
-@app.not_found
-@tracer.capture_method
-def not_found(ex: NotFoundError):
-    method = app.current_event.http_method
-    path = app.current_event.path
-    return build_response(404, {"message": f"Route {method} {path} not found"})
-
-
-@app.get("/health")
-def health():
-    return build_response(200, {"message": "Healthy"})
-
-
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
 @tracer.capture_lambda_handler
 @middleware
 def lambda_handler(event, context: LambdaContext):
-    logger.info("App Called")
 
     return app.resolve(event, context)
