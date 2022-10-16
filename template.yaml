@@ -66,8 +66,6 @@ Resources:
           Properties:
             Method: ANY
             Path: /{path+}
-            Auth:
-              ApiKeyRequired: true
       Policies:
         - Version: "2012-10-17"
           Statement: 

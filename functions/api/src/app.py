@@ -30,13 +30,28 @@ def not_found(ex: NotFoundError):
 
 @app.get("/health")
 def health():
-    return build_response(200, {"message": "Fuck you Mitch"})
+    return build_response(200, {"message": "OK"})
 
 
 @app.post("/game")
 @tracer.capture_method
-def post_game():
-    logger.info("Attempting to add new game")
+def create_game():
+    logger.info("Request POST/game")
+
+
+    return build_response(200, {"message": "Attempted to create game"})
+
+@app.get("/game/<gameId>")
+@tracer.capture_method
+def get_game(gameId):
+    logger.info(f"Request GET/game/{gameId}")
+
+    return build_response(200, {"message": f"Attempted to get game {gameId}"})
+
+@app.post("/game/<gameId>")
+@tracer.capture_method
+def post_game(gameId):
+    logger.info(f"Request POST/game/{gameId}")
     # TODO: Creates a random gameId, processes data, then writes to dynamo
 
     game_id = format(random.getrandbits(64), "x")
