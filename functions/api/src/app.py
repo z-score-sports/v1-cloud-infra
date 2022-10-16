@@ -1,7 +1,7 @@
 import os
-import random
+from datetime import datetime
+from uuid import uuid4
 
-import boto3
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler import APIGatewayRestResolver
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -9,7 +9,7 @@ from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.event_handler.exceptions import NotFoundError
 
-
+from functions.api.src.dynamo import DynamoTable
 from functions.api.src.response_utils import build_response
 
 tracer = Tracer()
@@ -19,6 +19,7 @@ logger = Logger(
     service=os.environ.get("POWERTOOLS_SERVICE_NAME", "DBInterfaceApi"),
 )
 
+TABLE = DynamoTable("http://host.docker.internal:8000", "DevTable")
 
 @app.not_found
 @tracer.capture_method
@@ -38,9 +39,28 @@ def health():
 def create_game():
     logger.info("Request POST/game")
 
+    game_id = uuid4()
+    test_item = {
+            "gameId": str(game_id),
+            "snapshot": "INFO",
+            "createTime": str(datetime.now()),
+            "deleted": False
+        }
 
-    return build_response(200, {"message": "Attempted to create game"})
+    put_item_response = TABLE.put_item(test_item)
 
+    return build_response(200, {"message": "Attempted to create game", "data": put_item_response})
+
+
+@app.get("/game/all")
+@tracer.capture_method
+def get_all():
+    logger.info("Request GET/game/all")
+
+    table_items = TABLE.get_all_items()
+
+    return build_response(200, {"message": "Attempted get all items", "data": table_items})
+    
 @app.get("/game/<gameId>")
 @tracer.capture_method
 def get_game(gameId):
@@ -54,15 +74,14 @@ def post_game(gameId):
     logger.info(f"Request POST/game/{gameId}")
     # TODO: Creates a random gameId, processes data, then writes to dynamo
 
-    game_id = format(random.getrandbits(64), "x")
-
     return build_response(
-        200, {"message": f"Game {game_id} data registered successfully"}
+        200, {"message": f"Game {gameId} data registered successfully"}
     )
 
 
 @lambda_handler_decorator
 def middleware(handler, event, context: LambdaContext):
+
 
     ip_address = event.get("headers", {}).get("X-Forwarded-For", "UNK")
     logger.append_keys(ip_address=ip_address)
