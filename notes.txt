@@ -1,0 +1,9 @@
+Need a few endpoints
+- Creat Game endpoint : creates a new game and adds it to DB. 
+    - Creates a new entry in the DB (gameId, snapshot, createTime)
+    - This returns a gameId and createTime
+- Post Game endpoint : adds a stack of actions to a game
+    - actions are ordered, need to create actionId, all are added to DB
+    - game info updated to include a lastUpdated Property
+- Get Game endpoint : returns the entire game object 
+    - takes in a gameId, returns the entire object associated with that game
