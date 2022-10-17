@@ -21,6 +21,7 @@ logger = Logger(
 
 TABLE = DynamoTable("http://host.docker.internal:8000", "DevTable")
 
+
 @app.not_found
 @tracer.capture_method
 def not_found(ex: NotFoundError):
@@ -37,19 +38,37 @@ def health():
 @app.post("/game")
 @tracer.capture_method
 def create_game():
+    """
+    Description : this method creates a new game entry to update
+
+    """
     logger.info("Request POST/game")
 
     game_id = uuid4()
-    test_item = {
-            "gameId": str(game_id),
-            "snapshot": "INFO",
-            "createTime": str(datetime.now()),
-            "deleted": False
-        }
+    create_time = str(datetime.now())
+    snapshot = "INFO"
+    item = {
+        "gameId": str(game_id),
+        "snapshot": snapshot,
+        "createTime": create_time,
+        "lastUpdateTime": create_time,
+        "deleted": False,
+    }
 
-    put_item_response = TABLE.put_item(test_item)
+    put_item_response = TABLE.put_item(item)
 
-    return build_response(200, {"message": "Attempted to create game", "data": put_item_response})
+    return build_response(
+        200,
+        {
+            "message": "Attempted to create game",
+            "data": {
+                "gameId": str(game_id),
+                "snapshot": snapshot,
+                "createTime": create_time,
+            },
+            "info": put_item_response,
+        },
+    )
 
 
 @app.get("/game/all")
@@ -59,14 +78,22 @@ def get_all():
 
     table_items = TABLE.get_all_items()
 
-    return build_response(200, {"message": "Attempted get all items", "data": table_items})
-    
+    return build_response(
+        200, {"message": "Attempted get all items", "data": table_items}
+    )
+
+
 @app.get("/game/<gameId>")
 @tracer.capture_method
 def get_game(gameId):
     logger.info(f"Request GET/game/{gameId}")
 
-    return build_response(200, {"message": f"Attempted to get game {gameId}"})
+    item = TABLE.get_item(gameId)
+
+    return build_response(
+        200, {"message": f"Attempted to get game {gameId}", "data": item}
+    )
+
 
 @app.post("/game/<gameId>")
 @tracer.capture_method
@@ -81,7 +108,6 @@ def post_game(gameId):
 
 @lambda_handler_decorator
 def middleware(handler, event, context: LambdaContext):
-
 
     ip_address = event.get("headers", {}).get("X-Forwarded-For", "UNK")
     logger.append_keys(ip_address=ip_address)
