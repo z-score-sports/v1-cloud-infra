@@ -53,6 +53,7 @@ def create_game():
         "createTime": create_time,
         "lastUpdateTime": create_time,
         "deleted": False,
+        "complete": False,
     }
 
     put_item_response = TABLE.put_item(item)

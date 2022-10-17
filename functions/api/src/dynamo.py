@@ -2,6 +2,8 @@ import json
 from datetime import datetime
 from boto3 import resource
 
+from functions.api.src.action_parser import ActionParser
+
 
 class DynamoTable:
     def __init__(self, endpoint_url, table_name):
@@ -18,7 +20,7 @@ class DynamoTable:
 
         return response
 
-    def put_item(self, item_definition):
+    def put_item(self, item_definition, return_value="ALL_OLD", batch=None):
 
         key_schema = self.table.key_schema
 
@@ -27,19 +29,25 @@ class DynamoTable:
             if not name in item_definition:
                 raise RuntimeError("Not all keys in the key schema exist")
 
-        response = self.table.put_item(Item=item_definition, ReturnValues="ALL_OLD")
+        if not batch:
+            response = self.table.put_item(
+                Item=item_definition, ReturnValues=return_value
+            )
+        else:
+            response = batch.put_item(item_definition, ReturnValues=return_value)
 
         return response
 
-    def upload_game(self, req_body):
-        # TODO:
+    def upload_game(self, gameId, actions: list):
 
-        # This is a batch writer for dynamodb
-        # with self.table.batch_writer() as batch:
-        #     for _ in range(1000000):
-        #         batch.put_item(Item={'HashKey': '...',
-        #                             'Otherstuff': '...'})
-        #     # You can also delete_items in a batch.
-        #     batch.delete_item(Key={'HashKey': 'SomeHashKey'})
-
+        with self.table.batch_writer() as batch:
+            for action in actions:
+                parser = ActionParser(action)
+                item = parser.get_json_db_item(gameId)
+                self.put_item(item, return_value="NONE", batch=batch)
+        now = str(datetime.now())
+        self.table.update_item(
+            Key={"gameId": gameId, "snapshot": "INFO"},
+            AttributeUpdates={"lastUpdateTime": now, "complete": True},
+        )
         return
