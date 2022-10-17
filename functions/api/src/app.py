@@ -35,7 +35,7 @@ def health():
     return build_response(200, {"message": "OK"})
 
 
-@app.post("/game")
+@app.post("/game/new")
 @tracer.capture_method
 def create_game():
     """
@@ -101,6 +101,10 @@ def get_game(gameId):
 def post_game(gameId):
     logger.info(f"Request POST/game/{gameId}")
     # TODO: Creates a random gameId, processes data, then writes to dynamo
+
+
+
+    TABLE.upload_game(gameId)
 
     return build_response(
         200, {"message": f"Game {gameId} data registered successfully"}
