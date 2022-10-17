@@ -34,7 +34,7 @@ class DynamoTable:
                 Item=item_definition, ReturnValues=return_value
             )
         else:
-            response = batch.put_item(item_definition, ReturnValues=return_value)
+            response = batch.put_item(Item=item_definition, ReturnValues=return_value)
 
         return response
 
