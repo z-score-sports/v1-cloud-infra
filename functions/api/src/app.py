@@ -102,9 +102,11 @@ def post_game(gameId):
     logger.info(f"Request POST/game/{gameId}")
     # TODO: Creates a random gameId, processes data, then writes to dynamo
 
+    body: dict = app.current_event.json_body
 
+    actions = body.get("actions", [])
 
-    TABLE.upload_game(gameId)
+    TABLE.upload_game(gameId=gameId, actions=actions)
 
     return build_response(
         200, {"message": f"Game {gameId} data registered successfully"}

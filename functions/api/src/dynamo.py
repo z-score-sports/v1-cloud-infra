@@ -34,7 +34,7 @@ class DynamoTable:
                 Item=item_definition, ReturnValues=return_value
             )
         else:
-            response = batch.put_item(Item=item_definition, ReturnValues=return_value)
+            response = batch.put_item(Item=item_definition)
 
         return response
 
@@ -48,6 +48,9 @@ class DynamoTable:
         now = str(datetime.now())
         self.table.update_item(
             Key={"gameId": gameId, "snapshot": "INFO"},
-            AttributeUpdates={"lastUpdateTime": now, "complete": True},
+            AttributeUpdates={
+                "lastUpdateTime": {"Value": now, "Action": "PUT"},
+                "complete": {"Value": True, "Action": "PUT"},
+            },
         )
         return
