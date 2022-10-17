@@ -25,7 +25,7 @@ class DynamoTable:
         for attr in key_schema:
             name = attr.get("AttributeName")
             if not name in item_definition:
-                raise Exception("Not all keys in the key schema exist")
+                raise RuntimeError("Not all keys in the key schema exist")
 
         response = self.table.put_item(Item=item_definition, ReturnValues="ALL_OLD")
 
