@@ -9,7 +9,8 @@ class ActionParser:
 
         item = {
             "gameId": gameId,
-            "snapshot": self.property("snapshot"),
+            "snapshot": self.get_property("snapshot"),
+            "playerId": self.get_property("playerId"),
             "type": self.get_property("type"),
             "subtype": self.get_property("subtype"),
             "detail": self.get_property("detail"),
