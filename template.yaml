@@ -85,6 +85,7 @@ Resources:
                 - dyanmodb:UpdateItem
                 - dynamodb:DeleteItem
                 - dynamodb:BatchWriteItem
+                - dynamodb:Scan
               Resource:
                 - !GetAtt GamesTable.Arn
 
