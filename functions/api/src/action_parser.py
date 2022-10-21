@@ -2,14 +2,14 @@ class ActionParser:
     def __init__(self, action_json) -> None:
         self.action = action_json
 
-    def get_property(self, property):
-        return self.action.get(property, None)
+    def get_property(self, property, default=None):
+        return self.action.get(property, default)
 
     def get_json_db_item(self, gameId):
 
         item = {
             "gameId": gameId,
-            "snapshot": self.get_property("snapshot"),
+            "snapshot": self.get_property("snapshot", default="N/A"),
             "playerId": self.get_property("playerId"),
             "type": self.get_property("type"),
             "subtype": self.get_property("subtype"),
