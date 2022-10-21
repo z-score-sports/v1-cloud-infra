@@ -19,7 +19,7 @@ logger = Logger(
     service=os.environ.get("POWERTOOLS_SERVICE_NAME", "DBInterfaceApi"),
 )
 
-TABLE = DynamoTable("http://host.docker.internal:8000", "DevTable")
+TABLE = DynamoTable(os.environ.get("DB_ENDPOINT_URL"), os.environ.get("DB_TABLE_NAME"))
 
 
 @app.not_found
@@ -42,7 +42,7 @@ def create_game():
     Description : this method creates a new game entry to update
 
     """
-    logger.info("Request POST/game")
+    logger.info("Request POST/game/new")
 
     game_id = uuid4()
     create_time = str(datetime.now())
