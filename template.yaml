@@ -56,7 +56,7 @@ Resources:
   DBInterfaceApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: DBInterfaceApiFunction
+      FunctionName: !Join ["-", ["DBInterfaceApi", !Ref "AWS::Region", !Ref ENV]]
       CodeUri: .
       Handler: functions/api/src/app.lambda_handler
       Timeout: 15
