@@ -82,7 +82,7 @@ Resources:
                 - dynamodb:GetItem
                 - dynamodb:GetBatchItem
                 - dynamodb:PutItem
-                - dyanmodb:UpdateItem
+                - dynamodb:UpdateItem
                 - dynamodb:DeleteItem
                 - dynamodb:BatchWriteItem
                 - dynamodb:Scan
