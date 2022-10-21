@@ -53,6 +53,11 @@ Resources:
         - AttributeName: "snapshot"
           KeyType: RANGE
 
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref ENV
+
   DBInterfaceApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -74,6 +79,8 @@ Resources:
           Properties:
             Method: ANY
             Path: /{path+}
+            RestApiId:
+              Ref: ApiGatewayApi
       Policies:
         - Version: "2012-10-17"
           Statement: 
