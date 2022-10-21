@@ -21,14 +21,7 @@ class DynamoTable:
         return response
 
     def put_item(self, item_definition, return_value="ALL_OLD", batch=None):
-
-        key_schema = self.table.key_schema
-
-        for attr in key_schema:
-            name = attr.get("AttributeName")
-            if not name in item_definition:
-                raise RuntimeError("Not all keys in the key schema exist")
-
+        
         if not batch:
             response = self.table.put_item(
                 Item=item_definition, ReturnValues=return_value
