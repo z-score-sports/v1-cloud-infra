@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "v1-cloud-infra"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-kx7n8tgggx0u"
+s3_prefix = "v1-cloud-infra"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "ENV=\"dev\""
+image_repositories = []
+disable_rollback = true

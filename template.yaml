@@ -3,6 +3,27 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Z-Score Protype V1 Cloud Infrastructure Repo
 
+Mappings:
+  DBEndpointURLMap:
+    localhost: 
+      local: "http://host.docker.internal:8000"
+      dev: "http://host.docker.internal:8000"
+      prod: "http://host.docker.internal:8000"
+    us-east-1:
+      local: "http://host.docker.internal:8000"
+      dev: "https://dynamodb.us-east-1.amazonaws.com"
+      prod: "https://dynamodb.us-east-1.amazonaws.com"
+  DBTableName:
+    localhost:
+      local: "DevTable"
+      dev: "DevTable"
+      prod: "DevTable"
+    us-east-1:
+      local: "DevTable"
+      dev: "GamesTable"
+      prod: "GamesTable"
+
+
 
 Parameters:
   ENV:
@@ -14,24 +35,12 @@ Parameters:
       - dev
       - prod
 
-Conditions: 
-  CreateSharedLayer: !Equals [!Ref ENV, local]
-
-
 Resources: 
 
-  SharedLayer:
-    Type: AWS::Serverless::LayerVersion
-    Condition: CreateSharedLayer
-    Properties:
-      ContentUri: shared/
-      CompatibleRuntimes:
-        - python3.9
-
-  GamesDB:
+  GamesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Join ["-", [ "GamesDB", !Ref "AWS::Region", !Ref ENV ]]
+      TableName: GamesTable
       BillingMode: PAY_PER_REQUEST 
       AttributeDefinitions:
         - AttributeName: "gameId"
@@ -43,23 +52,22 @@ Resources:
           KeyType: HASH
         - AttributeName: "snapshot"
           KeyType: RANGE
-            
 
   DBInterfaceApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Join ["-", [ "DBinterfaceApiFunction", !Ref "AWS::Region", !Ref ENV ]]
+      FunctionName: DBInterfaceApiFunction
       CodeUri: .
       Handler: functions/api/src/app.lambda_handler
       Timeout: 15
       Runtime: python3.9
       Tracing: Active
-      Layers:
-        - !Ref SharedLayer
       Environment:
         Variables:
           LOG_LEVEL: INFO
           POWERTOOLS_SERVICE_NAME: DBInterfaceApi
+          DB_ENDPOINT_URL: !FindInMap [DBEndpointURLMap, !Ref "AWS::Region", !Ref ENV]
+          DB_TABLE_NAME: !FindInMap [DBTableName, !Ref "AWS::Region", !Ref ENV]
       Events:
         ApiEvent:
           Type: Api
@@ -78,7 +86,7 @@ Resources:
                 - dynamodb:DeleteItem
                 - dynamodb:BatchWriteItem
               Resource:
-                - !GetAtt GamesDB.Arn
+                - !GetAtt GamesTable.Arn
 
       
 
