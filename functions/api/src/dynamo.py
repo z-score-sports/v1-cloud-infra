@@ -43,7 +43,7 @@ class DynamoTable:
             Key={"gameId": gameId, "snapshot": "INFO"},
             AttributeUpdates={
                 "lastUpdateTime": {"Value": now, "Action": "PUT"},
-                "complete": {"Value": True, "Action": "PUT"},
+                "complete": {"Value": True, "Action": "PUT"}, # might need to edit condition when it gets true
             },
         )
         return
